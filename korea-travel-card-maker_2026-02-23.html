@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🇰🇷 Korea Travel Card Maker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;800&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    /* ─────────────────────────────────────────
+       BASE RESET & GLOBAL
+    ───────────────────────────────────────── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans KR', 'Segoe UI', sans-serif;
+      background: #F7F5F0;
+      min-height: 100vh;
+    }
+
+    input, textarea, button { font-family: inherit; }
+
+    /* ─────────────────────────────────────────
+       FORM INPUTS
+    ───────────────────────────────────────── */
+    input, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 2px solid #E8E8E8;
+      font-size: 15px;
+      background: #fff;
+      transition: border-color 0.2s;
+    }
+    input:focus, textarea:focus { border-color: #E8572A; outline: none; }
+    textarea { resize: vertical; min-height: 72px; }
+
+    /* ─────────────────────────────────────────
+       LAYOUT
+    ───────────────────────────────────────── */
+    .panel {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+      margin-bottom: 16px;
+    }
+    .panel h2  { font-size: 18px; margin-bottom: 20px; color: #1A1A1A; }
+    .field     { margin-bottom: 16px; }
+    label      { display: block; font-size: 13px; font-weight: 700; color: #444; margin-bottom: 6px; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    /* ─────────────────────────────────────────
+       BUTTONS
+    ───────────────────────────────────────── */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px 20px;
+      border-radius: 12px;
+      border: none;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      text-align: center;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn:active   { opacity: 0.8; transform: scale(0.98); }
+    .btn:disabled { background: #ccc !important; cursor: not-allowed; }
+
+    .btn-orange { background: #E8572A; color: #fff; }
+    .btn-green  { background: #2AAE5A; color: #fff; }
+    .btn-gray   { background: #F0F0F0; color: #555; }
+    .btn-light  { background: #FFF0EC; color: #E8572A; }
+    .btn-dashed {
+      background: #fff;
+      color: #E8572A;
+      border: 2px dashed #E8572A;
+      width: auto;
+      padding: 8px 16px;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .btn-row          { display: flex; gap: 10px; }
+    .btn-row .btn     { flex: 1; }
+
+    /* ─────────────────────────────────────────
+       STEP TABS
+    ───────────────────────────────────────── */
+    .step-tabs {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 18px 16px 0;
+      margin-bottom: 20px;
+    }
+    .tab {
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tab-line { width: 16px; height: 2px; background: #E0E0E0; }
+
+    /* ─────────────────────────────────────────
+       CATEGORY BUTTONS
+    ───────────────────────────────────────── */
+    #cat-btns    { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .cat-btn {
+      padding: 8px 14px;
+      border-radius: 20px;
+      border: 2px solid #E0E0E0;
+      background: #fff;
+      color: #555;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    /* ─────────────────────────────────────────
+       STAR RATING
+    ───────────────────────────────────────── */
+    #star-btns     { display: flex; gap: 8px; }
+
+    .star-btn {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      border: 2px solid #E0E0E0;
+      background: #fff;
+      font-size: 22px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .star-btn.on { border-color: #FFB800; background: #FFF8E1; }
+
+    /* ─────────────────────────────────────────
+       THEME SELECTOR
+    ───────────────────────────────────────── */
+    .theme-btn {
+      padding: 16px 20px;
+      border-radius: 12px;
+      border: 3px solid #E0E0E0;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 12px;
+      text-align: left;
+      transition: border-color 0.2s;
+    }
+
+    /* ─────────────────────────────────────────
+       INFO BOX
+    ───────────────────────────────────────── */
+    .info-box {
+      background: #F7FFF9;
+      border: 2px solid #2AAE5A;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #444;
+      line-height: 2;
+    }
+    .info-box strong { color: #2AAE5A; display: block; margin-bottom: 4px; }
+
+    /* ─────────────────────────────────────────
+       INFO CARD STYLES
+    ───────────────────────────────────────── */
+    #card {
+      width: 540px;
+      min-height: 300px;
+      border-radius: 20px;
+      overflow: hidden;
+      font-family: 'Noto Sans KR', 'Segoe UI', sans-serif;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    #card-header { padding: 22px 28px 18px; }
+    #card-badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.25);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+    }
+    #card-name {
+      color: #fff;
+      font-size: 26px;
+      font-weight: 800;
+      margin: 0 0 4px;
+      line-height: 1.2;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    #card-korean  { color: rgba(255,255,255,0.8); font-size: 15px; margin: 0; }
+    #card-body    { padding: 20px 28px; }
+    #card-desc    { font-size: 14px; line-height: 1.7; margin-bottom: 16px; font-style: italic; opacity: 0.85; }
+    #card-grid    { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    .ci-label     { font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; opacity: 0.6; }
+    .ci-val       { font-size: 13px; font-weight: 500; margin-top: 2px; }
+    #card-tip     { border-radius: 8px; padding: 10px 14px; }
+    #card-tip-lbl { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 3px; }
+    #card-tip-txt { font-size: 13px; line-height: 1.5; }
+    #card-footer  { display: flex; justify-content: space-between; align-items: center; padding: 10px 28px; }
+    #card-channel { font-size: 11px; font-weight: 600; }
+    #card-stars   { font-size: 14px; letter-spacing: 1px; color: #FFB800; }
+
+    /* ─────────────────────────────────────────
+       CARD PREVIEW CONTAINER
+    ───────────────────────────────────────── */
+    #preview-container { overflow: auto; margin-bottom: 20px; border-radius: 12px; background: #eee; padding: 12px; }
+    #preview-wrap      { transform-origin: top left; }
+
+    /* ─────────────────────────────────────────
+       CUSTOM CATEGORY MODAL
+    ───────────────────────────────────────── */
+    #modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    #modal-overlay.open { display: flex; }
+    #modal-box { background: #fff; border-radius: 16px; padding: 24px; width: 100%; max-width: 360px; }
+    #modal-box h3 { font-size: 16px; margin-bottom: 16px; }
+
+    #emoji-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .emoji-btn {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      border: 2px solid #E0E0E0;
+      background: #fff;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .emoji-btn.on { border-color: #E8572A; background: #FFF0EC; }
+  </style>
+</head>
+
+<body>
+
+  <!-- ═══════════════════════════════════════
+       HEADER
+  ═══════════════════════════════════════ -->
+  <div style="background:#E8572A; padding:18px 24px; text-align:center;">
+    <h1 style="color:#fff; font-size:22px; font-weight:800;">🇰🇷 Korea Travel Card Maker</h1>
+    <a href="https://www.youtube.com/@nicethere" target="_blank"
+       style="color:rgba(255,255,255,0.85); font-size:13px; margin-top:4px; display:block; text-decoration:none;">
+      @nicethere ↗
+    </a>
+  </div>
+
+  <!-- STEP TABS -->
+  <div class="step-tabs" id="tabs"></div>
+
+  <!-- MAIN -->
+  <div style="max-width:700px; margin:0 auto; padding:0 16px 60px;">
+
+    <!-- ── STEP 1: FILL INFO ── -->
+    <div id="step1">
+      <div class="panel">
+        <h2>📝 Step 1: Tell us about the place</h2>
+
+        <div class="field">
+          <label>Category *</label>
+          <div id="cat-btns"></div>
+          <button class="btn btn-dashed" onclick="openModal()">＋ Add custom category</button>
+        </div>
+
+        <div class="field">
+          <label>Place Name (English) *</label>
+          <input id="f-name" type="text" placeholder="e.g. Gyeongbokgung Palace"/>
+        </div>
+
+        <div class="field">
+          <label>Korean Name (optional)</label>
+          <input id="f-korean" type="text" placeholder="e.g. 경복궁"/>
+        </div>
+
+        <div class="field">
+          <label>Description</label>
+          <textarea id="f-desc" placeholder="Write a short description about this place..."></textarea>
+        </div>
+
+        <div class="grid-2">
+          <div><label>📍 Area / Location</label><input id="f-address" placeholder="e.g. Jongno-gu, Seoul"/></div>
+          <div><label>🕐 Opening Hours</label>  <input id="f-hours"   placeholder="e.g. 9am – 6pm"/></div>
+          <div><label>💰 Price Range</label>     <input id="f-price"   placeholder="e.g. ₩10,000–20,000"/></div>
+          <div><label>🚇 Nearest Subway</label>  <input id="f-subway"  placeholder="e.g. Gyeongbokgung Stn."/></div>
+        </div>
+
+        <div class="field">
+          <label>✨ Your Personal Tip</label>
+          <input id="f-tip" placeholder="e.g. Go early morning to avoid crowds!"/>
+        </div>
+
+        <div class="field">
+          <label>⭐ Your Rating</label>
+          <div id="star-btns"></div>
+        </div>
+
+        <button class="btn btn-orange" onclick="goStep(2)" style="margin-top:8px;">Next: Pick a Style →</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 2: PICK STYLE ── -->
+    <div id="step2" style="display:none;">
+      <div class="panel">
+        <h2>🎨 Step 2: Pick a card style</h2>
+        <div id="theme-btns"></div>
+        <div class="btn-row">
+          <button class="btn btn-gray"   onclick="goStep(1)">← Back</button>
+          <button class="btn btn-orange" onclick="goStep(3)" style="flex:2;">Next: Download →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: SAVE ── -->
+    <div id="step3" style="display:none;">
+      <div class="panel">
+        <h2>📲 Step 3: Save your card!</h2>
+        <p style="color:#666; font-size:14px; line-height:1.6; margin-bottom:18px;">
+          Tap the button below. A new page will open —
+          long-press the image and tap <strong>Save to Photos</strong>!
+        </p>
+
+        <div class="info-box">
+          <strong>📱 How to add it to your video:</strong>
+          1. Tap the button below<br/>
+          2. Long-press the image → Save to Photos<br/>
+          3. Add it as an image in your video editor!
+        </div>
+
+        <div id="preview-container">
+          <div id="preview-wrap">
+            <div id="card">
+              <div id="card-header">
+                <div id="card-badge"></div>
+                <h2  id="card-name"></h2>
+                <p   id="card-korean"></p>
+              </div>
+              <div id="card-body">
+                <p   id="card-desc"></p>
+                <div id="card-grid"></div>
+                <div id="card-tip" style="display:none;">
+                  <div id="card-tip-lbl">✨ Tip</div>
+                  <div id="card-tip-txt"></div>
+                </div>
+              </div>
+              <div id="card-footer">
+                <span id="card-channel"></span>
+                <span id="card-stars"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-green" id="btn-dl" style="margin-bottom:12px; font-size:18px; padding:18px;">
+          📲 Open Card Image
+        </button>
+        <div class="btn-row">
+          <button class="btn btn-gray"  onclick="goStep(2)">← Style</button>
+          <button class="btn btn-light" onclick="newPlace()">＋ New Place</button>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+
+
+  <!-- ═══════════════════════════════════════
+       CUSTOM CATEGORY MODAL
+  ═══════════════════════════════════════ -->
+  <div id="modal-overlay" onclick="closeModalOutside(event)">
+    <div id="modal-box">
+      <h3>➕ Add Custom Category</h3>
+
+      <div class="field">
+        <label>Pick an emoji</label>
+        <div id="emoji-row"></div>
+      </div>
+
+      <div class="field">
+        <label>Category name</label>
+        <input id="modal-name" type="text" placeholder="e.g. Hot Spring"/>
+      </div>
+
+      <div class="field">
+        <label>Color</label>
+        <input id="modal-color" type="color" value="#E8572A"
+               style="width:60px; height:44px; padding:4px; border-radius:10px; cursor:pointer;"/>
+      </div>
+
+      <div class="btn-row" style="margin-top:8px;">
+        <button class="btn btn-gray"   onclick="closeModal()">Cancel</button>
+        <button class="btn btn-orange" onclick="confirmAddCategory()">Add Category</button>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    // ─────────────────────────────────────────
+    //  CONFIGURATION — edit these to customise
+    // ─────────────────────────────────────────
+
+    var CHANNEL_NAME = "@nicethere";
+    var CHANNEL_URL  = "https://www.youtube.com/@nicethere";
+
+    var DEFAULT_CATS = [
+      { label: "🍜 Restaurant", value: "restaurant", color: "#E8572A" },
+      { label: "☕ Café",        value: "cafe",       color: "#8B5E3C" },
+      { label: "🏯 Attraction",  value: "attraction", color: "#2A6EE8" },
+      { label: "🛍️ Shopping",   value: "shopping",   color: "#9B2AE8" },
+      { label: "🌸 Nature",      value: "nature",     color: "#2AAE5A" },
+      { label: "🍺 Bar / Night", value: "bar",        color: "#1A1A2E" },
+    ];
+
+    var THEMES = [
+      { id:"bright", emoji:"☀️", name:"Bright",      bg:"#FFFDF7", text:"#1A1A1A", sub:"#6B6B6B", accent:"#E8572A", desc:"Clean & modern, easy to read"       },
+      { id:"seoul",  emoji:"🌃", name:"Seoul Night", bg:"#0D0D1A", text:"#F0F0FF", sub:"#9090B0", accent:"#FF6B9D", desc:"Dark & stylish for trendy spots"     },
+      { id:"hanok",  emoji:"🏘️", name:"Hanok",       bg:"#F5EFE0", text:"#2C1810", sub:"#7A6355", accent:"#8B4513", desc:"Warm & cozy for traditional places"  },
+    ];
+
+    var MODAL_EMOJIS = [
+      "🏖️","🎭","🎨","🏋️","💊","🌊","🎵","🍵",
+      "🏨","🎡","🗺️","🛕","⛩️","🧖","🍱","🍣","🥘","🎂","🌺","🏔️"
+    ];
+
+
+    // ─────────────────────────────────────────
+    //  STATE
+    // ─────────────────────────────────────────
+
+    var CATS = DEFAULT_CATS.slice(); // copy so we can add custom ones
+
+    var S = {
+      step:     1,
+      category: "restaurant",
+      theme:    "bright",
+      name:     "",
+      korean:   "",
+      desc:     "",
+      address:  "",
+      hours:    "",
+      price:    "",
+      subway:   "",
+      tip:      "",
+      rating:   4,
+    };
+
+    var pickedEmoji = MODAL_EMOJIS[0];
+
+
+    // ─────────────────────────────────────────
+    //  INITIALISE
+    // ─────────────────────────────────────────
+
+    function init() {
+      buildCategories();
+      buildStars();
+      buildThemes();
+      bindInputs();
+      document.getElementById("btn-dl").onclick = downloadCard;
+      renderTabs();
+      updateCard();
+      scalePreview();
+      window.addEventListener("resize", scalePreview);
+    }
+
+
+    // ─────────────────────────────────────────
+    //  BUILD UI COMPONENTS
+    // ─────────────────────────────────────────
+
+    function buildCategories() {
+      var wrap = document.getElementById("cat-btns");
+      wrap.innerHTML = "";
+      CATS.forEach(function(cat) {
+        var btn = document.createElement("button");
+        btn.className       = "cat-btn";
+        btn.textContent     = cat.label;
+        btn.dataset.val     = cat.value;
+        setCatStyle(btn, cat);
+        btn.onclick = function() {
+          S.category = cat.value;
+          refreshCategories();
+          updateCard();
+        };
+        wrap.appendChild(btn);
+      });
+    }
+
+    function buildStars() {
+      var wrap = document.getElementById("star-btns");
+      wrap.innerHTML = "";
+      for (var n = 1; n <= 5; n++) {
+        (function(num) {
+          var btn = document.createElement("button");
+          btn.className   = "star-btn" + (num <= S.rating ? " on" : "");
+          btn.textContent = "★";
+          btn.onclick = function() { S.rating = num; refreshStars(); updateCard(); };
+          wrap.appendChild(btn);
+        })(n);
+      }
+    }
+
+    function buildThemes() {
+      var wrap = document.getElementById("theme-btns");
+      wrap.innerHTML = "";
+      THEMES.forEach(function(t) {
+        var btn           = document.createElement("button");
+        btn.className     = "theme-btn";
+        btn.id            = "theme-" + t.id;
+        btn.style.background  = t.bg;
+        btn.style.borderColor = S.theme === t.id ? t.accent : "#E0E0E0";
+        btn.innerHTML =
+          '<span style="font-size:28px;">' + t.emoji + '</span>' +
+          '<div style="flex:1;">' +
+            '<div style="font-weight:700; font-size:15px; color:' + t.text + ';">' + t.name + '</div>' +
+            '<div style="font-size:12px; color:' + t.sub + '; margin-top:2px;">' + t.desc + '</div>' +
+          '</div>' +
+          '<span id="tick-' + t.id + '" style="font-size:22px; color:' + t.accent + '; display:' + (S.theme === t.id ? 'block' : 'none') + ';">✓</span>';
+        btn.onclick = function() { S.theme = t.id; refreshThemes(); updateCard(); };
+        wrap.appendChild(btn);
+      });
+    }
+
+    function buildEmojiPicker() {
+      var row = document.getElementById("emoji-row");
+      row.innerHTML = "";
+      MODAL_EMOJIS.forEach(function(em) {
+        var btn         = document.createElement("button");
+        btn.className   = "emoji-btn" + (em === pickedEmoji ? " on" : "");
+        btn.textContent = em;
+        btn.onclick = function() {
+          pickedEmoji = em;
+          document.querySelectorAll(".emoji-btn").forEach(function(b) { b.className = "emoji-btn"; });
+          btn.className = "emoji-btn on";
+        };
+        row.appendChild(btn);
+      });
+    }
+
+    function bindInputs() {
+      [
+        ["f-name",    "name"],
+        ["f-korean",  "korean"],
+        ["f-desc",    "desc"],
+        ["f-address", "address"],
+        ["f-hours",   "hours"],
+        ["f-price",   "price"],
+        ["f-subway",  "subway"],
+        ["f-tip",     "tip"],
+      ].forEach(function(pair) {
+        document.getElementById(pair[0]).addEventListener("input", function(e) {
+          S[pair[1]] = e.target.value;
+          updateCard();
+        });
+      });
+    }
+
+
+    // ─────────────────────────────────────────
+    //  REFRESH HELPERS
+    // ─────────────────────────────────────────
+
+    function setCatStyle(btn, cat) {
+      var active = cat.value === S.category;
+      btn.style.background  = active ? cat.color  : "#fff";
+      btn.style.borderColor = active ? cat.color  : "#E0E0E0";
+      btn.style.color       = active ? "#fff"     : "#555";
+    }
+
+    function refreshCategories() {
+      document.querySelectorAll(".cat-btn").forEach(function(btn) {
+        var cat = CATS.find(function(c) { return c.value === btn.dataset.val; });
+        if (cat) setCatStyle(btn, cat);
+      });
+    }
+
+    function refreshStars() {
+      document.querySelectorAll(".star-btn").forEach(function(btn, i) {
+        btn.className = "star-btn" + (i + 1 <= S.rating ? " on" : "");
+      });
+    }
+
+    function refreshThemes() {
+      THEMES.forEach(function(t) {
+        var btn  = document.getElementById("theme-" + t.id);
+        var tick = document.getElementById("tick-"  + t.id);
+        if (btn)  btn.style.borderColor = t.id === S.theme ? t.accent : "#E0E0E0";
+        if (tick) tick.style.display    = t.id === S.theme ? "block"  : "none";
+      });
+    }
+
+
+    // ─────────────────────────────────────────
+    //  STEPS & TABS
+    // ─────────────────────────────────────────
+
+    function renderTabs() {
+      var wrap = document.getElementById("tabs");
+      wrap.innerHTML = "";
+      ["1. Fill Info", "2. Pick Style", "3. Download"].forEach(function(lbl, i) {
+        var n      = i + 1;
+        var done   = S.step > n;
+        var active = S.step === n;
+
+        var tab           = document.createElement("div");
+        tab.className     = "tab";
+        tab.textContent   = (done ? "✓ " : "") + lbl;
+        tab.style.background = active ? "#E8572A" : done ? "#2AAE5A" : "#E0E0E0";
+        tab.style.color      = (active || done)   ? "#fff"    : "#888";
+        tab.onclick = function() { goStep(n); };
+        wrap.appendChild(tab);
+
+        if (i < 2) {
+          var line           = document.createElement("div");
+          line.className     = "tab-line";
+          line.style.background = done ? "#2AAE5A" : "#E0E0E0";
+          wrap.appendChild(line);
+        }
+      });
+    }
+
+    function goStep(n) {
+      S.step = n;
+      document.getElementById("step1").style.display = n === 1 ? "block" : "none";
+      document.getElementById("step2").style.display = n === 2 ? "block" : "none";
+      document.getElementById("step3").style.display = n === 3 ? "block" : "none";
+      renderTabs();
+      if (n === 3) { updateCard(); setTimeout(scalePreview, 50); }
+      window.scrollTo(0, 0);
+    }
+
+
+    // ─────────────────────────────────────────
+    //  CARD RENDERER
+    // ─────────────────────────────────────────
+
+    function updateCard() {
+      var cat = CATS.find(function(c)  { return c.value === S.category; }) || CATS[0];
+      var t   = THEMES.find(function(th) { return th.id === S.theme; })   || THEMES[0];
+
+      // Card base
+      document.getElementById("card").style.background = t.bg;
+
+      // Header
+      document.getElementById("card-header").style.background = cat.color;
+      document.getElementById("card-badge").textContent       = cat.label;
+      document.getElementById("card-name").textContent        = S.name || "Place Name";
+
+      var korEl          = document.getElementById("card-korean");
+      korEl.textContent  = S.korean;
+      korEl.style.display = S.korean ? "block" : "none";
+
+      // Body
+      document.getElementById("card-body").style.color = t.text;
+
+      var descEl          = document.getElementById("card-desc");
+      descEl.textContent  = S.desc ? '"' + S.desc + '"' : "";
+      descEl.style.display = S.desc ? "block" : "none";
+      descEl.style.color   = t.text;
+
+      // Info grid
+      var grid = document.getElementById("card-grid");
+      grid.innerHTML = "";
+      [
+        ["📍 Location", S.address],
+        ["🕐 Hours",    S.hours],
+        ["💰 Price",    S.price],
+        ["🚇 Subway",   S.subway],
+      ].forEach(function(item) {
+        if (!item[1]) return;
+        var cell = document.createElement("div");
+        cell.innerHTML =
+          '<div class="ci-label" style="color:' + t.sub  + ';">' + item[0] + '</div>' +
+          '<div class="ci-val"   style="color:' + t.text + ';">' + item[1] + '</div>';
+        grid.appendChild(cell);
+      });
+
+      // Tip box
+      var tipWrap = document.getElementById("card-tip");
+      if (S.tip) {
+        tipWrap.style.display    = "block";
+        tipWrap.style.background =
+          t.id === "seoul" ? "rgba(255,107,157,0.12)" :
+          t.id === "hanok" ? "rgba(139,69,19,0.1)"    :
+                             "rgba(232,87,42,0.08)";
+        tipWrap.style.border     = "1.5px solid " + cat.color + "55";
+        tipWrap.style.borderLeft = "4px solid "   + cat.color;
+        document.getElementById("card-tip-lbl").style.color = cat.color;
+        document.getElementById("card-tip-txt").textContent = S.tip;
+        document.getElementById("card-tip-txt").style.color = t.text;
+      } else {
+        tipWrap.style.display = "none";
+      }
+
+      // Footer
+      document.getElementById("card-footer").style.borderTop =
+        "1px solid " + (t.id === "seoul" ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.07)");
+      document.getElementById("card-channel").textContent = CHANNEL_NAME;
+      document.getElementById("card-channel").style.color = t.sub;
+      document.getElementById("card-stars").textContent   =
+        "★".repeat(S.rating) + "☆".repeat(5 - S.rating);
+    }
+
+
+    // ─────────────────────────────────────────
+    //  PREVIEW SCALING
+    // ─────────────────────────────────────────
+
+    function scalePreview() {
+      var wrap = document.getElementById("preview-wrap");
+      var cont = document.getElementById("preview-container");
+      if (!wrap || !cont) return;
+
+      var scale = Math.min(1, (cont.clientWidth - 24) / 540);
+      wrap.style.transform       = "scale(" + scale + ")";
+      wrap.style.transformOrigin = "top left";
+      wrap.style.width           = "540px";
+      cont.style.height = Math.round(document.getElementById("card").offsetHeight * scale + 24) + "px";
+    }
+
+
+    // ─────────────────────────────────────────
+    //  DOWNLOAD — opens card in new tab, long-press to save
+    // ─────────────────────────────────────────
+
+    async function downloadCard() {
+      var btn = document.getElementById("btn-dl");
+      btn.disabled    = true;
+      btn.textContent = "⏳ Generating...";
+
+      // Temporarily restore full scale for html2canvas
+      var wrap          = document.getElementById("preview-wrap");
+      var savedTransform = wrap.style.transform;
+      wrap.style.transform = "scale(1)";
+      document.getElementById("preview-container").style.height = "auto";
+
+      try {
+        var canvas  = await html2canvas(document.getElementById("card"), {
+          scale: 3, backgroundColor: null, useCORS: true, logging: false
+        });
+        var dataUrl = canvas.toDataURL("image/png");
+
+        var newTab = window.open("", "_blank");
+        if (newTab) {
+          newTab.document.write(
+            '<html><head>' +
+              '<title>Save Card</title>' +
+              '<meta name="viewport" content="width=device-width,initial-scale=1"/>' +
+            '</head>' +
+            '<body style="margin:0; background:#111; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; gap:20px; padding:24px;">' +
+              '<p style="color:#fff; font-family:sans-serif; font-size:18px; text-align:center; line-height:1.6;">' +
+                '📲 <strong>Long-press</strong> the image<br/>then tap <strong>Save to Photos</strong>' +
+              '</p>' +
+              '<img src="' + dataUrl + '" style="max-width:100%; border-radius:12px; box-shadow:0 8px 32px rgba(0,0,0,0.6);"/>' +
+            '</body></html>'
+          );
+          newTab.document.close();
+        }
+      } catch(e) {
+        alert("Failed to generate image. Please try again!");
+      }
+
+      // Restore scaled preview
+      wrap.style.transform = savedTransform;
+      scalePreview();
+      btn.disabled    = false;
+      btn.textContent = "📲 Open Card Image";
+    }
+
+
+    // ─────────────────────────────────────────
+    //  RESET FOR NEW PLACE
+    // ─────────────────────────────────────────
+
+    function newPlace() {
+      ["f-name","f-korean","f-desc","f-address","f-hours","f-price","f-subway","f-tip"]
+        .forEach(function(id) { document.getElementById(id).value = ""; });
+
+      S.name = ""; S.korean = ""; S.desc   = "";
+      S.address = ""; S.hours = ""; S.price = ""; S.subway = ""; S.tip = "";
+      S.rating  = 4;
+
+      refreshStars();
+      updateCard();
+      goStep(1);
+    }
+
+
+    // ─────────────────────────────────────────
+    //  CUSTOM CATEGORY MODAL
+    // ─────────────────────────────────────────
+
+    function openModal() {
+      pickedEmoji = MODAL_EMOJIS[0];
+      document.getElementById("modal-name").value  = "";
+      document.getElementById("modal-color").value = "#E8572A";
+      buildEmojiPicker();
+      document.getElementById("modal-overlay").classList.add("open");
+    }
+
+    function closeModal() {
+      document.getElementById("modal-overlay").classList.remove("open");
+    }
+
+    function closeModalOutside(e) {
+      if (e.target === document.getElementById("modal-overlay")) closeModal();
+    }
+
+    function confirmAddCategory() {
+      var name  = document.getElementById("modal-name").value.trim();
+      var color = document.getElementById("modal-color").value;
+
+      if (!name) { alert("Please enter a category name!"); return; }
+
+      var newCat = {
+        label: pickedEmoji + " " + name,
+        value: name.toLowerCase().replace(/\s+/g, "-") + "-" + Date.now(),
+        color: color,
+      };
+
+      CATS.push(newCat);
+      S.category = newCat.value;
+
+      buildCategories();
+      updateCard();
+      closeModal();
+    }
+
+
+    // ─────────────────────────────────────────
+    //  START
+    // ─────────────────────────────────────────
+
+    init();
+
+  </script>
+</body>
+</html>
